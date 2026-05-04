@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronLeft, ChevronRight, Plus, Clock, User, X, 
-  Save, MapPin, Stethoscope, CheckCircle, CalendarDays, Loader2
+  ChevronLeft, Plus, Clock, User, X, 
+  Save, MapPin, Stethoscope, CalendarDays, Loader2
 } from 'lucide-react';
 import { useCitas, createCita } from '../../lib/useSupabase';
 
@@ -35,11 +35,22 @@ export default function Agenda() {
   const location = useLocation();
   const navigate = useNavigate();
   const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [viewMode, setViewMode] = useState<'week' | 'day'>('day'); // Default to day on mobile
+  // Persistent selected date (initialized to today)
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const saved = localStorage.getItem('agenda_selected_date');
+    return saved || new Date().toISOString().split('T')[0];
+  });
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>(() => {
+    return (localStorage.getItem('agenda_view_mode') as any) || 'day';
+  });
   const [showModal, setShowModal] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Sync state to localStorage
+  useMemo(() => {
+    localStorage.setItem('agenda_selected_date', selectedDate);
+    localStorage.setItem('agenda_view_mode', viewMode);
+  }, [selectedDate, viewMode]);
   
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const startDate = weekDates[0].toISOString().split('T')[0];
@@ -70,7 +81,6 @@ export default function Agenda() {
     }
   });
 
-  const monthLabel = weekDates[0].toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
 
   const openNewAppointment = (dayIndex?: number, hour?: number) => {
     const dateStr = dayIndex !== undefined ? weekDates[dayIndex].toISOString().split('T')[0] : weekDates[0].toISOString().split('T')[0];
@@ -100,74 +110,62 @@ export default function Agenda() {
     }
 
     setShowModal(false);
-    setSaved(true);
     refetch();
-    setTimeout(() => setSaved(false), 3000);
   };
 
-  const todayDayIndex = new Date().getDay() - 1; // 0=Mon in our system
 
   return (
     <div className="w-full flex flex-col h-[calc(100vh-6rem)] bg-[#F8FAFC] overflow-hidden">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-4 bg-white border-b border-slate-200 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="md:hidden">
-             <CalendarDays className="w-6 h-6 text-[#0EA5E9]" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <span className="hidden md:inline"><CalendarDays className="w-5 h-5 text-[#0EA5E9]" /></span> Agenda
+      {/* Header (iPhone Style) */}
+      <div className="bg-white px-6 pt-6 pb-2 shrink-0">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col">
+            <button 
+              onClick={() => setViewMode('month')}
+              className="text-[#FF3B30] text-sm font-semibold flex items-center gap-1 -ml-1 hover:opacity-70 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" /> {new Date(selectedDate).getFullYear()}
+            </button>
+            <h1 className="text-3xl font-bold text-slate-900 mt-1 capitalize">
+              {new Date(selectedDate).toLocaleDateString('es-MX', { month: 'long' })}
             </h1>
-            <p className="text-sm text-slate-500 capitalize">{monthLabel}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex bg-slate-100 rounded-xl p-1">
+              <button 
+                onClick={() => setViewMode('day')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'day' ? 'bg-white shadow-sm text-[#FF3B30]' : 'text-slate-500'}`}
+              >
+                <Clock className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setViewMode('month')}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'month' ? 'bg-white shadow-sm text-[#FF3B30]' : 'text-slate-500'}`}
+              >
+                <CalendarDays className="w-5 h-5" />
+              </button>
+            </div>
+            <button 
+              onClick={() => openNewAppointment()}
+              className="text-[#FF3B30] hover:opacity-70 transition-opacity"
+            >
+              <Plus className="w-7 h-7" />
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center w-full sm:w-auto justify-between sm:justify-end gap-3">
-          {/* View Toggle (Mobile focus) */}
-          <div className="flex items-center bg-slate-100 rounded-xl p-1">
-            <button 
-              onClick={() => setViewMode('day')}
-              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${viewMode === 'day' ? 'bg-white text-[#0EA5E9] shadow-sm' : 'text-slate-500'}`}
-            >
-              Día
-            </button>
-            <button 
-              onClick={() => setViewMode('week')}
-              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${viewMode === 'week' ? 'bg-white text-[#0EA5E9] shadow-sm' : 'text-slate-500'}`}
-            >
-              Semana
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-              <button onClick={() => setWeekOffset(prev => prev - 1)} className="p-2 hover:bg-white rounded-lg transition-colors">
-                <ChevronLeft className="w-4 h-4 text-slate-600" />
-              </button>
-              <button onClick={() => { setWeekOffset(0); setSelectedDate(new Date().toISOString().split('T')[0]); }} className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-white rounded-lg transition-colors uppercase tracking-wider">
-                Hoy
-              </button>
-              <button onClick={() => setWeekOffset(prev => prev + 1)} className="p-2 hover:bg-white rounded-lg transition-colors">
-                <ChevronRight className="w-4 h-4 text-slate-600" />
-              </button>
-            </div>
-
-            <button 
-              onClick={() => openNewAppointment()}
-              className="bg-[#0EA5E9] hover:bg-[#0284C7] text-white p-2 sm:px-4 sm:py-2 rounded-xl font-semibold text-sm flex items-center transition-colors shadow-sm gap-2"
-            >
-              <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Nueva Cita</span>
-            </button>
-          </div>
+        {/* Days Header */}
+        <div className="grid grid-cols-7 text-center border-b border-slate-100 pb-2">
+          {['D','L','M','M','J','V','S'].map((d, i) => (
+            <span key={i} className="text-[10px] font-bold text-slate-400 uppercase">{d}</span>
+          ))}
         </div>
       </div>
 
-      {/* iPhone Style Date Picker (Mobile Only) */}
-      <div className={`md:hidden bg-white border-b border-slate-100 px-4 py-3 shrink-0 overflow-x-auto no-scrollbar ${viewMode === 'day' ? 'block' : 'hidden'}`}>
-        <div className="flex gap-4 min-w-max">
+      {/* Selected Week Strip (iPhone style) */}
+      <div className={`bg-white border-b border-slate-100 px-6 py-2 shrink-0 ${viewMode === 'day' ? 'block' : 'hidden'}`}>
+        <div className="flex justify-between">
           {weekDates.map((date, idx) => {
             const dateStr = date.toISOString().split('T')[0];
             const isSelected = selectedDate === dateStr;
@@ -177,18 +175,20 @@ export default function Agenda() {
               <button
                 key={idx}
                 onClick={() => setSelectedDate(dateStr)}
-                className={`flex flex-col items-center gap-1 min-w-[50px] py-2 rounded-2xl transition-all ${isSelected ? 'bg-[#0EA5E9] text-white shadow-lg shadow-sky-100' : 'hover:bg-slate-50'}`}
+                className={`flex flex-col items-center gap-1 min-w-[40px] py-2 rounded-full transition-all ${isSelected ? 'bg-[#FF3B30] text-white' : 'hover:bg-slate-50'}`}
               >
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
-                  {DAYS_LABELS[idx]}
-                </span>
-                <span className={`text-lg font-bold ${isSelected ? 'text-white' : isToday ? 'text-[#0EA5E9]' : 'text-slate-800'}`}>
+                <span className={`text-[18px] font-semibold ${isSelected ? 'text-white' : isToday ? 'text-[#FF3B30]' : 'text-slate-900'}`}>
                   {date.getDate()}
                 </span>
-                {isToday && !isSelected && <div className="w-1 h-1 bg-[#0EA5E9] rounded-full mt-0.5" />}
+                {isToday && !isSelected && <div className="w-1 h-1 bg-[#FF3B30] rounded-full mt-0.5" />}
               </button>
             );
           })}
+        </div>
+        <div className="text-center mt-3 py-1 border-t border-slate-50">
+          <p className="text-xs font-bold text-slate-900 capitalize">
+            {new Date(selectedDate).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
       </div>
 
@@ -200,59 +200,101 @@ export default function Agenda() {
           </div>
         )}
 
+        {/* Month View Grid */}
+        {viewMode === 'month' && (
+          <div className="grid grid-cols-7 auto-rows-fr h-full">
+            {/* Generate month days logic */}
+            {(() => {
+              const d = new Date(selectedDate);
+              const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+              const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+              const prevMonthDays = new Date(d.getFullYear(), d.getMonth(), 0).getDate();
+              
+              const cells = [];
+              // Prev month filler
+              for (let i = firstDay - 1; i >= 0; i--) {
+                cells.push(<div key={`prev-${i}`} className="p-4 border-b border-r border-slate-50 text-slate-300 text-lg font-medium">{prevMonthDays - i}</div>);
+              }
+              // Current month
+              for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2,'0')}-${i.toString().padStart(2,'0')}`;
+                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const isSelected = selectedDate === dateStr;
+                const hasEvents = citas.some(c => c.fecha === dateStr);
+
+                cells.push(
+                  <div 
+                    key={i} 
+                    onClick={() => { setSelectedDate(dateStr); setViewMode('day'); }}
+                    className="p-4 border-b border-r border-slate-50 relative cursor-pointer hover:bg-slate-50 transition-colors flex flex-col items-center"
+                  >
+                    <span className={`text-lg font-medium w-8 h-8 flex items-center justify-center rounded-full ${isSelected ? 'bg-[#FF3B30] text-white' : isToday ? 'text-[#FF3B30]' : 'text-slate-900'}`}>
+                      {i}
+                    </span>
+                    {hasEvents && <div className="mt-1 w-1.5 h-1.5 bg-slate-300 rounded-full" />}
+                  </div>
+                );
+              }
+              return cells;
+            })()}
+          </div>
+        )}
+
         {/* Day View (iPhone Style) */}
-        {viewMode === 'day' ? (
-          <div className="flex flex-col">
+        {viewMode === 'day' && (
+          <div className="flex flex-col relative">
+            {/* Current Time Line */}
+            {selectedDate === new Date().toISOString().split('T')[0] && (
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-[#FF3B30] z-10 flex items-center"
+                style={{ 
+                  top: `${(new Date().getHours() - 8 + new Date().getMinutes()/60) * 80 + 12}px` 
+                }}
+              >
+                <div className="w-2.5 h-2.5 bg-[#FF3B30] rounded-full -ml-1.5 shadow-sm" />
+                <span className="ml-2 bg-[#FF3B30] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                  {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </span>
+              </div>
+            )}
+
             {HOURS.map(hour => {
               const hourStr = `${hour.toString().padStart(2, '0')}:00:00`;
               const hourCitas = citas.filter(c => c.fecha === selectedDate && c.hora === hourStr);
               
               return (
-                <div key={hour} className="flex border-b border-slate-50 min-h-[80px] relative group">
+                <div key={hour} className="flex border-b border-slate-100 min-h-[80px] relative">
                   {/* Time Column */}
-                  <div className="w-16 flex flex-col items-center pt-3 border-r border-slate-50 shrink-0">
-                    <span className="text-[11px] font-bold text-slate-400">
+                  <div className="w-16 flex flex-col items-end pr-3 pt-2 shrink-0">
+                    <span className="text-[11px] font-medium text-slate-400">
                       {hour.toString().padStart(2, '0')}:00
                     </span>
                   </div>
 
                   {/* Content Area */}
                   <div 
-                    className="flex-1 p-2 relative cursor-pointer hover:bg-slate-50/50 transition-colors"
+                    className="flex-1 p-2 relative cursor-pointer"
                     onClick={() => {
                       const dayIdx = weekDates.findIndex(d => d.toISOString().split('T')[0] === selectedDate);
                       openNewAppointment(dayIdx, hour);
                     }}
                   >
-                    {hourCitas.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Plus className="w-4 h-4 text-slate-200" />
-                      </div>
-                    )}
-                    
                     {hourCitas.map(appt => (
                       <motion.div
                         key={appt.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (appt.paciente_id) navigate(`/pacientes/${appt.paciente_id}`);
                         }}
-                        className="bg-white border border-slate-100 shadow-sm rounded-2xl p-3 flex flex-col gap-2 hover:shadow-md transition-all border-l-4 border-l-[#0EA5E9]"
+                        className="bg-[#FF3B30]/5 border-l-4 border-l-[#FF3B30] rounded-r-lg p-3 flex flex-col gap-1 hover:bg-[#FF3B30]/10 transition-all mb-2"
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{appt.doctor_nombre}</p>
-                            <h4 className="text-sm font-bold text-slate-800">{appt.paciente?.nombre}</h4>
-                          </div>
-                          <div className="bg-sky-50 text-[#0EA5E9] p-2 rounded-lg">
-                            <User className="w-4 h-4" />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500">
-                          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {appt.hora.substring(0, 5)}</span>
-                          <span className="flex items-center gap-1"><Stethoscope className="w-3.5 h-3.5" /> {appt.tratamiento}</span>
+                        <h4 className="text-sm font-bold text-slate-900">{appt.paciente?.nombre}</h4>
+                        <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                          <span className="flex items-center gap-1 text-[#FF3B30]">{appt.hora.substring(0, 5)}</span>
+                          <span>•</span>
+                          <span>{appt.tratamiento}</span>
                         </div>
                       </motion.div>
                     ))}
@@ -261,28 +303,23 @@ export default function Agenda() {
               );
             })}
           </div>
-        ) : (
-          /* Weekly Grid (Existing) */
+        )}
+
+        {/* Weekly Grid (Compatible with PC/iPad) */}
+        {viewMode === 'week' && (
           <div className="w-full h-full">
-            <div className="md:hidden flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase py-2 bg-slate-50 border-b border-slate-200">
-              <span>Desliza para ver la semana</span>
-              <div className="w-8 h-1 bg-slate-200 rounded-full relative overflow-hidden">
-                <motion.div animate={{ x: [0, 16, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute inset-y-0 left-0 w-4 bg-[#0EA5E9] rounded-full" />
-              </div>
-            </div>
-            
             <div className="min-w-[800px]">
               {/* Day Headers */}
               <div className="grid grid-cols-[80px_repeat(6,1fr)] sticky top-0 z-10 bg-white border-b border-slate-200">
                 <div className="p-3 border-r border-slate-100" />
                 {weekDates.map((date, idx) => {
-                  const isToday = weekOffset === 0 && idx === todayDayIndex;
+                  const isToday = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
                   return (
-                    <div key={idx} className={`p-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-sky-50' : ''}`}>
-                      <div className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? 'text-[#0EA5E9]' : 'text-slate-400'}`}>
+                    <div key={idx} className={`p-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-red-50/30' : ''}`}>
+                      <div className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
                         {DAYS_LABELS[idx]}
                       </div>
-                      <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-white bg-[#0EA5E9] w-8 h-8 rounded-full flex items-center justify-center mx-auto' : 'text-slate-800'}`}>
+                      <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-white bg-[#FF3B30] w-8 h-8 rounded-full flex items-center justify-center mx-auto' : 'text-slate-900'}`}>
                         {date.getDate()}
                       </div>
                     </div>
@@ -303,39 +340,28 @@ export default function Agenda() {
                     const dayDateStr = weekDates[dayIdx].toISOString().split('T')[0];
                     const hourStr = `${hour.toString().padStart(2, '0')}:00:00`;
                     const cellAppointments = citas.filter(a => a.fecha === dayDateStr && a.hora === hourStr);
-                    const isToday = weekOffset === 0 && dayIdx === todayDayIndex;
+                    const isToday = dayDateStr === new Date().toISOString().split('T')[0];
 
                     return (
                       <div 
                         key={dayIdx} 
-                        className={`relative border-r border-slate-100 last:border-0 cursor-pointer hover:bg-sky-50/30 transition-colors ${isToday ? 'bg-sky-50/20' : ''}`}
+                        className={`relative border-r border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 transition-colors ${isToday ? 'bg-red-50/10' : ''}`}
                         onClick={() => openNewAppointment(dayIdx, hour)}
                       >
-                        {cellAppointments.map(appt => {
-                          const durationHours = appt.duracion_min / 60;
-                          return (
-                            <motion.div
-                              key={appt.id}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="absolute inset-x-1 top-1 rounded-lg px-2 py-1.5 text-white text-[10px] cursor-pointer hover:shadow-lg transition-shadow overflow-hidden z-[5]"
-                              style={{ 
-                                backgroundColor: '#0EA5E9',
-                                height: `${durationHours * 60 - 8}px`,
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (appt.paciente_id) navigate(`/pacientes/${appt.paciente_id}`);
-                              }}
-                            >
-                              <div className="font-bold truncate">{appt.paciente?.nombre}</div>
-                              <div className="opacity-80 truncate flex items-center gap-1 mt-0.5">
-                                <Clock className="w-2.5 h-2.5" />
-                                {appt.hora.substring(0, 5)}
-                              </div>
-                            </motion.div>
-                          );
-                        })}
+                        {cellAppointments.map(appt => (
+                          <motion.div
+                            key={appt.id}
+                            className="absolute inset-x-1 top-1 rounded-lg px-2 py-1.5 bg-[#FF3B30] text-white text-[10px] font-bold cursor-pointer hover:brightness-110 transition-all z-[5] shadow-sm"
+                            style={{ height: `${(appt.duracion_min / 60) * 60 - 8}px` }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (appt.paciente_id) navigate(`/pacientes/${appt.paciente_id}`);
+                            }}
+                          >
+                            <div className="truncate">{appt.paciente?.nombre}</div>
+                            <div className="opacity-80 truncate">{appt.hora.substring(0, 5)}</div>
+                          </motion.div>
+                        ))}
                       </div>
                     );
                   })}
@@ -476,17 +502,22 @@ export default function Agenda() {
         )}
       </AnimatePresence>
 
-      {/* Success Toast */}
-      <AnimatePresence>
-        {saved && (
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
-            className="fixed bottom-8 right-8 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center font-medium text-sm z-50"
-          >
-            <CheckCircle className="w-5 h-5 mr-3" /> Cita agendada exitosamente
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Bottom Floating Bar (iPhone style) */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-slate-200 rounded-full shadow-2xl px-6 py-3 flex items-center gap-8 z-40">
+        <button 
+          onClick={() => { setWeekOffset(0); setSelectedDate(new Date().toISOString().split('T')[0]); }}
+          className="text-slate-900 font-bold text-sm hover:opacity-70 transition-opacity"
+        >
+          Hoy
+        </button>
+        <div className="w-px h-4 bg-slate-200" />
+        <button onClick={() => setViewMode('month')} className={`p-1 ${viewMode === 'month' ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
+          <CalendarDays className="w-6 h-6" />
+        </button>
+        <button onClick={() => setViewMode('day')} className={`p-1 ${viewMode === 'day' ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
+          <Clock className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 }
