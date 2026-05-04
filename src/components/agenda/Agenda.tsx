@@ -17,6 +17,11 @@ const toLocalDateString = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const fromLocalDateString = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const SUCURSALES = [
   { id: 'alto_flujo', label: 'Alto Flujo', color: '#0EA5E9' },
   { id: 'regular', label: 'Flujo Regular', color: '#8B5CF6' },
@@ -135,10 +140,10 @@ export default function Agenda() {
               onClick={() => setViewMode('month')}
               className="text-[#0EA5E9] text-sm font-semibold flex items-center gap-1 -ml-1 hover:opacity-70 transition-opacity"
             >
-              <ChevronLeft className="w-4 h-4" /> {new Date(selectedDate).getFullYear()}
+              <ChevronLeft className="w-4 h-4" /> {fromLocalDateString(selectedDate).getFullYear()}
             </button>
             <h1 className="text-3xl font-bold text-slate-900 mt-1 capitalize">
-              {new Date(selectedDate).toLocaleDateString('es-MX', { month: 'long' })}
+              {fromLocalDateString(selectedDate).toLocaleDateString('es-MX', { month: 'long' })}
             </h1>
           </div>
           <div className="flex items-center gap-4">
@@ -195,7 +200,7 @@ export default function Agenda() {
           </div>
           <div className="text-center mt-4 pb-2 border-t border-slate-50">
             <p className="text-xs font-bold text-slate-900 capitalize pt-2 tracking-wide">
-              {new Date(selectedDate).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {fromLocalDateString(selectedDate).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
         </div>
@@ -214,7 +219,7 @@ export default function Agenda() {
           <div className="grid grid-cols-7 auto-rows-fr h-full">
             {/* Generate month days logic */}
             {(() => {
-              const d = new Date(selectedDate);
+              const d = fromLocalDateString(selectedDate);
               const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
               const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
               const prevMonthDays = new Date(d.getFullYear(), d.getMonth(), 0).getDate();
