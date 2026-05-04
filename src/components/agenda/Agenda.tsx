@@ -118,12 +118,12 @@ export default function Agenda() {
     <div className="w-full flex flex-col h-[calc(100vh-6rem)] bg-[#F8FAFC] overflow-hidden">
       
       {/* Header (iPhone Style) */}
-      <div className="bg-white px-6 pt-6 pb-2 shrink-0">
-        <div className="flex justify-between items-start mb-4">
+      <div className="bg-white px-6 pt-6 shrink-0 border-b border-slate-100">
+        <div className="flex justify-between items-start mb-6">
           <div className="flex flex-col">
             <button 
               onClick={() => setViewMode('month')}
-              className="text-[#FF3B30] text-sm font-semibold flex items-center gap-1 -ml-1 hover:opacity-70 transition-opacity"
+              className="text-[#0EA5E9] text-sm font-semibold flex items-center gap-1 -ml-1 hover:opacity-70 transition-opacity"
             >
               <ChevronLeft className="w-4 h-4" /> {new Date(selectedDate).getFullYear()}
             </button>
@@ -135,60 +135,59 @@ export default function Agenda() {
             <div className="flex bg-slate-100 rounded-xl p-1">
               <button 
                 onClick={() => setViewMode('day')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'day' ? 'bg-white shadow-sm text-[#FF3B30]' : 'text-slate-500'}`}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'day' ? 'bg-white shadow-sm text-[#0EA5E9]' : 'text-slate-500'}`}
               >
                 <Clock className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => setViewMode('month')}
-                className={`p-2 rounded-lg transition-all ${viewMode === 'month' ? 'bg-white shadow-sm text-[#FF3B30]' : 'text-slate-500'}`}
+                className={`p-2 rounded-lg transition-all ${viewMode === 'month' ? 'bg-white shadow-sm text-[#0EA5E9]' : 'text-slate-500'}`}
               >
                 <CalendarDays className="w-5 h-5" />
               </button>
             </div>
             <button 
               onClick={() => openNewAppointment()}
-              className="text-[#FF3B30] hover:opacity-70 transition-opacity"
+              className="text-[#0EA5E9] hover:opacity-70 transition-opacity"
             >
               <Plus className="w-7 h-7" />
             </button>
           </div>
         </div>
 
-        {/* Days Header */}
-        <div className="grid grid-cols-7 text-center border-b border-slate-100 pb-2">
-          {['D','L','M','M','J','V','S'].map((d, i) => (
-            <span key={i} className="text-[10px] font-bold text-slate-400 uppercase">{d}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Selected Week Strip (iPhone style) */}
-      <div className={`bg-white border-b border-slate-100 px-6 py-2 shrink-0 ${viewMode === 'day' ? 'block' : 'hidden'}`}>
-        <div className="flex justify-between">
-          {weekDates.map((date, idx) => {
-            const dateStr = date.toISOString().split('T')[0];
-            const isSelected = selectedDate === dateStr;
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
-            
-            return (
-              <button
-                key={idx}
-                onClick={() => setSelectedDate(dateStr)}
-                className={`flex flex-col items-center gap-1 min-w-[40px] py-2 rounded-full transition-all ${isSelected ? 'bg-[#FF3B30] text-white' : 'hover:bg-slate-50'}`}
-              >
-                <span className={`text-[18px] font-semibold ${isSelected ? 'text-white' : isToday ? 'text-[#FF3B30]' : 'text-slate-900'}`}>
-                  {date.getDate()}
-                </span>
-                {isToday && !isSelected && <div className="w-1 h-1 bg-[#FF3B30] rounded-full mt-0.5" />}
-              </button>
-            );
-          })}
-        </div>
-        <div className="text-center mt-3 py-1 border-t border-slate-50">
-          <p className="text-xs font-bold text-slate-900 capitalize">
-            {new Date(selectedDate).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
+        {/* Unified Calendar Header (Initials + Numbers) */}
+        <div className={`mb-2 ${viewMode === 'day' ? 'block' : 'hidden'}`}>
+          <div className="grid grid-cols-7 text-center mb-2 max-w-4xl mx-auto">
+            {['D','L','M','M','J','V','S'].map((d, i) => (
+              <span key={i} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{d}</span>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 max-w-4xl mx-auto">
+            {weekDates.map((date, idx) => {
+              const dateStr = date.toISOString().split('T')[0];
+              const isSelected = selectedDate === dateStr;
+              const isToday = dateStr === new Date().toISOString().split('T')[0];
+              
+              return (
+                <div key={idx} className="flex justify-center">
+                  <button
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`flex flex-col items-center justify-center w-10 h-10 rounded-full transition-all ${isSelected ? 'bg-[#0EA5E9] text-white shadow-lg shadow-sky-100' : 'hover:bg-slate-50'}`}
+                  >
+                    <span className={`text-lg font-semibold ${isSelected ? 'text-white' : isToday ? 'text-[#0EA5E9]' : 'text-slate-900'}`}>
+                      {date.getDate()}
+                    </span>
+                    {isToday && !isSelected && <div className="w-1 h-1 bg-[#0EA5E9] rounded-full mt-0.5" />}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="text-center mt-4 pb-2 border-t border-slate-50">
+            <p className="text-xs font-bold text-slate-900 capitalize pt-2 tracking-wide">
+              {new Date(selectedDate).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -228,7 +227,7 @@ export default function Agenda() {
                     onClick={() => { setSelectedDate(dateStr); setViewMode('day'); }}
                     className="p-4 border-b border-r border-slate-50 relative cursor-pointer hover:bg-slate-50 transition-colors flex flex-col items-center"
                   >
-                    <span className={`text-lg font-medium w-8 h-8 flex items-center justify-center rounded-full ${isSelected ? 'bg-[#FF3B30] text-white' : isToday ? 'text-[#FF3B30]' : 'text-slate-900'}`}>
+                    <span className={`text-lg font-medium w-8 h-8 flex items-center justify-center rounded-full ${isSelected ? 'bg-[#0EA5E9] text-white' : isToday ? 'text-[#0EA5E9]' : 'text-slate-900'}`}>
                       {i}
                     </span>
                     {hasEvents && <div className="mt-1 w-1.5 h-1.5 bg-slate-300 rounded-full" />}
@@ -246,13 +245,13 @@ export default function Agenda() {
             {/* Current Time Line */}
             {selectedDate === new Date().toISOString().split('T')[0] && (
               <div 
-                className="absolute left-0 right-0 border-t-2 border-[#FF3B30] z-10 flex items-center"
+                className="absolute left-0 right-0 border-t-2 border-[#0EA5E9] z-10 flex items-center"
                 style={{ 
                   top: `${(new Date().getHours() - 8 + new Date().getMinutes()/60) * 80 + 12}px` 
                 }}
               >
-                <div className="w-2.5 h-2.5 bg-[#FF3B30] rounded-full -ml-1.5 shadow-sm" />
-                <span className="ml-2 bg-[#FF3B30] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                <div className="w-2.5 h-2.5 bg-[#0EA5E9] rounded-full -ml-1.5 shadow-sm" />
+                <span className="ml-2 bg-[#0EA5E9] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                   {new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })}
                 </span>
               </div>
@@ -288,11 +287,11 @@ export default function Agenda() {
                           e.stopPropagation();
                           if (appt.paciente_id) navigate(`/pacientes/${appt.paciente_id}`);
                         }}
-                        className="bg-[#FF3B30]/5 border-l-4 border-l-[#FF3B30] rounded-r-lg p-3 flex flex-col gap-1 hover:bg-[#FF3B30]/10 transition-all mb-2"
+                        className="bg-[#0EA5E9]/5 border-l-4 border-l-[#0EA5E9] rounded-r-lg p-3 flex flex-col gap-1 hover:bg-[#0EA5E9]/10 transition-all mb-2"
                       >
                         <h4 className="text-sm font-bold text-slate-900">{appt.paciente?.nombre}</h4>
                         <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                          <span className="flex items-center gap-1 text-[#FF3B30]">{appt.hora.substring(0, 5)}</span>
+                          <span className="flex items-center gap-1 text-[#0EA5E9]">{appt.hora.substring(0, 5)}</span>
                           <span>•</span>
                           <span>{appt.tratamiento}</span>
                         </div>
@@ -316,10 +315,10 @@ export default function Agenda() {
                   const isToday = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
                   return (
                     <div key={idx} className={`p-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-red-50/30' : ''}`}>
-                      <div className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
+                      <div className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? 'text-[#0EA5E9]' : 'text-slate-400'}`}>
                         {DAYS_LABELS[idx]}
                       </div>
-                      <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-white bg-[#FF3B30] w-8 h-8 rounded-full flex items-center justify-center mx-auto' : 'text-slate-900'}`}>
+                      <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-white bg-[#0EA5E9] w-8 h-8 rounded-full flex items-center justify-center mx-auto' : 'text-slate-900'}`}>
                         {date.getDate()}
                       </div>
                     </div>
@@ -351,7 +350,7 @@ export default function Agenda() {
                         {cellAppointments.map(appt => (
                           <motion.div
                             key={appt.id}
-                            className="absolute inset-x-1 top-1 rounded-lg px-2 py-1.5 bg-[#FF3B30] text-white text-[10px] font-bold cursor-pointer hover:brightness-110 transition-all z-[5] shadow-sm"
+                            className="absolute inset-x-1 top-1 rounded-lg px-2 py-1.5 bg-[#0EA5E9] text-white text-[10px] font-bold cursor-pointer hover:brightness-110 transition-all z-[5] shadow-sm"
                             style={{ height: `${(appt.duracion_min / 60) * 60 - 8}px` }}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -511,10 +510,10 @@ export default function Agenda() {
           Hoy
         </button>
         <div className="w-px h-4 bg-slate-200" />
-        <button onClick={() => setViewMode('month')} className={`p-1 ${viewMode === 'month' ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
+        <button onClick={() => setViewMode('month')} className={`p-1 ${viewMode === 'month' ? 'text-[#0EA5E9]' : 'text-slate-400'}`}>
           <CalendarDays className="w-6 h-6" />
         </button>
-        <button onClick={() => setViewMode('day')} className={`p-1 ${viewMode === 'day' ? 'text-[#FF3B30]' : 'text-slate-400'}`}>
+        <button onClick={() => setViewMode('day')} className={`p-1 ${viewMode === 'day' ? 'text-[#0EA5E9]' : 'text-slate-400'}`}>
           <Clock className="w-6 h-6" />
         </button>
       </div>
