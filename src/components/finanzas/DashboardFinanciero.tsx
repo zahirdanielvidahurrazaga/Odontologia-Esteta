@@ -99,37 +99,62 @@ export default function DashboardFinanciero() {
         <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Control de Pagos Recientes</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px] text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 bg-white">
-                <th className="px-6 py-4 font-semibold">Fecha</th>
-                <th className="px-6 py-4 font-semibold">Doctor/a</th>
-                <th className="px-6 py-4 font-semibold">Paciente</th>
-                <th className="px-6 py-4 font-semibold text-right">Monto (Abono)</th>
-                <th className="px-6 py-4 font-semibold">Método</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.pagosRecientes.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">No hay pagos registrados recientemente.</td>
+        <div className="w-full">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px] text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 bg-white">
+                  <th className="px-6 py-4 font-semibold">Fecha</th>
+                  <th className="px-6 py-4 font-semibold">Doctor/a</th>
+                  <th className="px-6 py-4 font-semibold">Paciente</th>
+                  <th className="px-6 py-4 font-semibold text-right">Monto (Abono)</th>
+                  <th className="px-6 py-4 font-semibold">Método</th>
                 </tr>
-              ) : (
-                stats.pagosRecientes.map((pago: any) => (
-                  <motion.tr key={pago.id} whileHover={{ backgroundColor: '#F8FAFC' }} className="border-b border-slate-100 last:border-0 transition-colors text-slate-700">
-                    <td className="px-6 py-4 whitespace-nowrap">{new Date(pago.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 font-medium text-[#0EA5E9]">Dr. Carlos E.</td>
-                    <td className="px-6 py-4 font-medium text-slate-800">{pago.pacientes?.nombre}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold">${Number(pago.monto).toLocaleString()}</span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500 capitalize">{pago.metodo_pago}</td>
-                  </motion.tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {stats.pagosRecientes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400">No hay pagos registrados recientemente.</td>
+                  </tr>
+                ) : (
+                  stats.pagosRecientes.map((pago: any) => (
+                    <motion.tr key={pago.id} whileHover={{ backgroundColor: '#F8FAFC' }} className="border-b border-slate-100 last:border-0 transition-colors text-slate-700">
+                      <td className="px-6 py-4 whitespace-nowrap">{new Date(pago.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 font-medium text-[#0EA5E9]">Dr. Carlos E.</td>
+                      <td className="px-6 py-4 font-medium text-slate-800">{pago.pacientes?.nombre}</td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-semibold">${Number(pago.monto).toLocaleString()}</span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 capitalize">{pago.metodo_pago}</td>
+                    </motion.tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {stats.pagosRecientes.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">No hay pagos registrados.</div>
+            ) : (
+              stats.pagosRecientes.map((pago: any) => (
+                <div key={pago.id} className="p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-400 uppercase">{new Date(pago.created_at).toLocaleDateString()}</span>
+                    <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-bold">${Number(pago.monto).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{pago.pacientes?.nombre}</p>
+                      <p className="text-xs text-slate-500">{pago.metodo_pago} • Dr. Carlos E.</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

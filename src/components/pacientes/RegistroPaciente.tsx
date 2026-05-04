@@ -323,17 +323,17 @@ export default function RegistroPaciente() {
                     <h3 className="font-semibold text-slate-800 mb-3 flex items-center text-sm">
                       <FileSignature className="w-4 h-4 mr-2 text-[#0EA5E9]" /> Firma del Paciente
                     </h3>
-                    <div className="w-full max-w-sm bg-white border-2 border-dashed border-slate-300 rounded-2xl relative overflow-hidden">
+                    <div className="w-full max-w-sm bg-white border-2 border-dashed border-slate-300 rounded-2xl relative overflow-hidden mx-auto">
                       <SignatureCanvas 
                         ref={sigCanvas} 
                         penColor="#0F172A" 
                         canvasProps={{ 
                           className: 'w-full h-40 cursor-crosshair touch-none', 
-                          style: { backgroundColor: '#F8FAFC' } 
+                          style: { backgroundColor: '#F8FAFC', width: '100%' } 
                         }} 
                       />
                       <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
-                        <span className="text-slate-400 text-xs font-medium px-4 text-center">Firme aquí con el dedo o mouse</span>
+                        <span className="text-slate-400 text-[10px] md:text-xs font-medium px-4 text-center">Firme aquí con el dedo o mouse</span>
                       </div>
                     </div>
                     <button 

@@ -308,64 +308,71 @@ export default function Odontogram() {
     <div className="w-full flex flex-col relative h-[calc(100vh-6rem)] bg-[#F8FAFC] overflow-hidden rounded-xl border border-slate-200">
       
       {/* Main Container */}
-      <div className={`flex-1 flex flex-col items-center bg-white m-2 mb-0 rounded-t-xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'mr-[320px]' : ''}`}>
+      <div className={`flex-1 flex flex-col items-center bg-white m-0 md:m-2 md:mb-0 rounded-none md:rounded-t-xl shadow-sm border-x-0 md:border border-slate-100 overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'md:mr-[320px]' : ''}`}>
         
         {/* Header with Save Button */}
-        <div className="w-full flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-white shrink-0">
+        <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 md:px-6 py-3 border-b border-slate-100 bg-white shrink-0 gap-3">
           <h2 className="text-sm font-bold text-slate-600 uppercase tracking-wider">Odontograma Inicial</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {hasTreatments && (
               <motion.button
                 initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                 onClick={() => handleSave(true)}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] disabled:bg-sky-300 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-[#0EA5E9] hover:bg-[#0284C7] disabled:bg-sky-300 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                {saving ? 'Guardando...' : 'Generar Presupuesto'}
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                Presupuesto
               </motion.button>
             )}
             <button
               onClick={() => handleSave(false)}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 disabled:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 disabled:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-colors"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               Guardar
             </button>
           </div>
         </div>
 
-        <div className="w-full flex-1 overflow-auto custom-scrollbar flex items-center justify-center p-8">
+        <div className="w-full flex-1 overflow-auto custom-scrollbar flex flex-col items-center p-4 md:p-8">
           {loadingOdo ? (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center my-auto">
               <Loader2 className="w-8 h-8 animate-spin text-[#0EA5E9] mb-4" />
               <p className="text-slate-500 font-medium">Cargando datos del odontograma...</p>
             </div>
           ) : (
-            <div className="min-w-[850px] flex flex-col gap-6 items-center justify-center relative">
-              
-              <div className="flex gap-1.5 items-end">
-                {upperTeeth.map(num => <ToothIcon key={num} num={num} isUpper={true} />)}
-              </div>
-              
-              <div className="w-full flex items-center justify-center my-4 opacity-50">
-                <div className="h-px bg-slate-300 flex-1"></div>
-                <span className="px-4 text-[9px] font-bold tracking-[0.2em] text-slate-400 uppercase">Línea Media</span>
-                <div className="h-px bg-slate-300 flex-1"></div>
+            <div className="w-full h-full flex flex-col items-center">
+              <div className="md:hidden flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase mb-4 bg-slate-50 px-3 py-1 rounded-full border border-slate-200">
+                <span>Desliza para ver todo</span>
+                <div className="w-8 h-1 bg-slate-200 rounded-full relative overflow-hidden">
+                  <motion.div animate={{ x: [0, 16, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute inset-y-0 left-0 w-4 bg-[#0EA5E9] rounded-full" />
+                </div>
               </div>
 
-              <div className="flex gap-1.5 items-start">
-                {lowerTeeth.map(num => <ToothIcon key={num} num={num} isUpper={false} />)}
-              </div>
+              <div className="min-w-[850px] flex flex-col gap-6 items-center justify-center relative p-4">
+                <div className="flex gap-1.5 items-end">
+                  {upperTeeth.map(num => <ToothIcon key={num} num={num} isUpper={true} />)}
+                </div>
+                
+                <div className="w-full flex items-center justify-center my-4 opacity-50">
+                  <div className="h-px bg-slate-300 flex-1"></div>
+                  <span className="px-4 text-[9px] font-bold tracking-[0.2em] text-slate-400 uppercase">Línea Media</span>
+                  <div className="h-px bg-slate-300 flex-1"></div>
+                </div>
 
+                <div className="flex gap-1.5 items-start">
+                  {lowerTeeth.map(num => <ToothIcon key={num} num={num} isUpper={false} />)}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Zonal Selection Bar (Sextants & Arches) */}
-      <div className={`bg-white border-t border-slate-200 p-3 mx-2 mb-2 rounded-b-xl flex flex-wrap items-center justify-center gap-2 shadow-sm transition-all duration-300 ${isSidebarOpen ? 'mr-[320px]' : ''}`}>
+      <div className={`bg-white border-t border-slate-200 p-3 m-0 md:mx-2 md:mb-2 md:rounded-b-xl flex flex-wrap items-center justify-center gap-2 shadow-sm transition-all duration-300 ${isSidebarOpen ? 'md:mr-[320px]' : ''}`}>
         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2 w-full text-center md:w-auto md:text-left mb-2 md:mb-0">Zonas Rápidas:</span>
         <button onClick={() => selectZone(SEXTANTS.S1)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 20 L20 20 L5 5" /></svg>
@@ -404,14 +411,14 @@ export default function Odontogram() {
 
       <AnimatePresence>
         {selectedTeeth.length > 0 && (
-          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className={`absolute bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 transition-all duration-300 ${isSidebarOpen ? 'ml-[-160px]' : ''}`}>
-            <div className="flex items-center gap-3">
-              <span className="w-7 h-7 rounded-full bg-[#0EA5E9] flex items-center justify-center text-sm font-bold shadow-inner">{selectedTeeth.length}</span>
-              <span className="text-sm font-medium tracking-wide">Piezas seleccionadas</span>
+          <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className={`absolute bottom-24 md:bottom-20 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-full shadow-2xl flex items-center gap-3 md:gap-4 transition-all duration-300 z-30 ${isSidebarOpen ? 'md:ml-[-160px]' : ''}`}>
+            <div className="flex items-center gap-2 md:gap-3">
+              <span className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-[#0EA5E9] flex items-center justify-center text-xs md:text-sm font-bold shadow-inner">{selectedTeeth.length}</span>
+              <span className="text-[10px] md:text-sm font-medium tracking-wide">Seleccionadas</span>
             </div>
-            <div className="h-5 w-px bg-slate-700" />
-            <button onClick={() => { setSelectedTeeth([]); setIsSidebarOpen(false); }} className="text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center">
-              <X className="w-4 h-4 mr-1.5" /> Descartar
+            <div className="h-4 md:h-5 w-px bg-slate-700" />
+            <button onClick={() => { setSelectedTeeth([]); setIsSidebarOpen(false); }} className="text-[10px] md:text-sm font-medium text-slate-400 hover:text-white transition-colors flex items-center">
+              <X className="w-3.5 h-3.5 mr-1" /> Descartar
             </button>
           </motion.div>
         )}
@@ -420,12 +427,12 @@ export default function Odontogram() {
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div 
-            initial={{ x: 320, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 320, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-            className="absolute top-2 right-2 bottom-2 w-[300px] bg-white rounded-xl shadow-xl border border-slate-200 flex flex-col z-20 overflow-hidden"
+            initial={{ x: '100%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: '100%', opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+            className="fixed md:absolute inset-0 md:inset-auto md:top-2 md:right-2 md:bottom-2 w-full md:w-[300px] bg-white md:rounded-xl shadow-xl border-t md:border border-slate-200 flex flex-col z-50 overflow-hidden"
           >
-            <div className="bg-slate-900 p-4 flex justify-between items-center text-white">
+            <div className="bg-slate-900 p-4 md:p-4 flex justify-between items-center text-white">
               <h3 className="font-semibold text-sm flex items-center gap-2 tracking-wide"><Stethoscope className="w-4 h-4" /> DIAGNÓSTICO</h3>
-              <button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+              <button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1"><X className="w-6 h-6 md:w-5 md:h-5" /></button>
             </div>
 
             <div className="flex border-b border-slate-100 bg-slate-50/50">

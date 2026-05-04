@@ -58,68 +58,99 @@ export default function PacientesList() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 bg-white">
-                  <th className="px-6 py-4 font-semibold">Paciente</th>
-                  <th className="px-6 py-4 font-semibold">Contacto</th>
-                  <th className="px-6 py-4 font-semibold">Sucursal</th>
-                  <th className="px-6 py-4 font-semibold">Registro</th>
-                  <th className="px-6 py-4 font-semibold text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pacientes.map((patient) => (
-                  <motion.tr 
-                    key={patient.id} 
-                    whileHover={{ backgroundColor: '#F8FAFC' }}
-                    className="border-b border-slate-100 last:border-0 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <Link to={`/pacientes/${patient.id}`} className="flex flex-col group">
-                        <span className="font-semibold text-slate-800 group-hover:text-[#0EA5E9] transition-colors">{patient.nombre}</span>
-                        {patient.apodo && <span className="text-xs text-slate-500 mt-0.5">"{patient.apodo}" • {patient.edad} años</span>}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center text-sm text-slate-600">
-                        <Phone className="w-3.5 h-3.5 mr-2 text-slate-400" />
-                        {patient.telefono || 'Sin teléfono'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${patient.sucursal_id === 'alto_flujo' ? 'bg-sky-50 text-sky-600 border border-sky-200' : 'bg-purple-50 text-purple-600 border border-purple-200'}`}>
-                        {patient.sucursal_id === 'alto_flujo' ? 'Alto Flujo' : 'Regular'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-700">
-                        {new Date(patient.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link 
-                          to={`/pacientes/${patient.id}`}
-                          className="p-2 text-slate-400 hover:text-[#0EA5E9] hover:bg-sky-50 rounded-lg transition-colors flex items-center justify-center group"
-                          title="Ver Expediente"
-                        >
-                          <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <div className="w-full">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 bg-white">
+                    <th className="px-6 py-4 font-semibold">Paciente</th>
+                    <th className="px-6 py-4 font-semibold">Contacto</th>
+                    <th className="px-6 py-4 font-semibold">Sucursal</th>
+                    <th className="px-6 py-4 font-semibold">Registro</th>
+                    <th className="px-6 py-4 font-semibold text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pacientes.map((patient) => (
+                    <motion.tr 
+                      key={patient.id} 
+                      whileHover={{ backgroundColor: '#F8FAFC' }}
+                      className="border-b border-slate-100 last:border-0 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <Link to={`/pacientes/${patient.id}`} className="flex flex-col group">
+                          <span className="font-semibold text-slate-800 group-hover:text-[#0EA5E9] transition-colors">{patient.nombre}</span>
+                          {patient.apodo && <span className="text-xs text-slate-500 mt-0.5">"{patient.apodo}" • {patient.edad} años</span>}
                         </Link>
-                        <Link 
-                          to={`/pacientes/${patient.id}/odontograma`}
-                          className="p-2 text-slate-400 hover:text-[#0EA5E9] hover:bg-sky-50 rounded-lg transition-colors flex items-center justify-center group"
-                          title="Ver Odontograma"
-                        >
-                          <Activity className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        </Link>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Phone className="w-3.5 h-3.5 mr-2 text-slate-400" />
+                          {patient.telefono || 'Sin teléfono'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${patient.sucursal_id === 'alto_flujo' ? 'bg-sky-50 text-sky-600 border border-sky-200' : 'bg-purple-50 text-purple-600 border border-purple-200'}`}>
+                          {patient.sucursal_id === 'alto_flujo' ? 'Alto Flujo' : 'Regular'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-700">
+                          {new Date(patient.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link 
+                            to={`/pacientes/${patient.id}`}
+                            className="p-2 text-slate-400 hover:text-[#0EA5E9] hover:bg-sky-50 rounded-lg transition-colors flex items-center justify-center group"
+                            title="Ver Expediente"
+                          >
+                            <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                          </Link>
+                          <Link 
+                            to={`/pacientes/${patient.id}/odontograma`}
+                            className="p-2 text-slate-400 hover:text-[#0EA5E9] hover:bg-sky-50 rounded-lg transition-colors flex items-center justify-center group"
+                            title="Ver Odontograma"
+                          >
+                            <Activity className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                          </Link>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {pacientes.map((patient) => (
+                <div key={patient.id} className="p-4 flex flex-col gap-3 hover:bg-slate-50 transition-colors">
+                  <Link to={`/pacientes/${patient.id}`} className="flex justify-between items-start">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-800 text-base">{patient.nombre}</span>
+                      <span className="text-xs text-slate-500">{patient.apodo ? `"${patient.apodo}" • ` : ''}{patient.edad} años</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${patient.sucursal_id === 'alto_flujo' ? 'bg-sky-50 text-sky-600 border border-sky-200' : 'bg-purple-50 text-purple-600 border border-purple-200'}`}>
+                      {patient.sucursal_id === 'alto_flujo' ? 'Alto Flujo' : 'Regular'}
+                    </span>
+                  </Link>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-sm text-slate-600">
+                      <Phone className="w-3.5 h-3.5 mr-2 text-slate-400" />
+                      {patient.telefono || 'Sin teléfono'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/pacientes/${patient.id}`} className="p-2 bg-slate-100 text-slate-600 rounded-lg"><FileText className="w-4 h-4" /></Link>
+                      <Link to={`/pacientes/${patient.id}/odontograma`} className="p-2 bg-[#0EA5E9]/10 text-[#0EA5E9] rounded-lg"><Activity className="w-4 h-4" /></Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

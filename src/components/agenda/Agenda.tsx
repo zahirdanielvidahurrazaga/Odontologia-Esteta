@@ -146,7 +146,15 @@ export default function Agenda() {
             <Loader2 className="w-8 h-8 animate-spin text-[#0EA5E9]" />
           </div>
         )}
-        <div className="min-w-[800px]">
+        <div className="w-full h-full">
+          <div className="md:hidden flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400 uppercase py-2 bg-slate-50 border-b border-slate-200">
+            <span>Desliza para ver la semana</span>
+            <div className="w-8 h-1 bg-slate-200 rounded-full relative overflow-hidden">
+              <motion.div animate={{ x: [0, 16, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute inset-y-0 left-0 w-4 bg-[#0EA5E9] rounded-full" />
+            </div>
+          </div>
+          
+          <div className="min-w-[800px]">
           {/* Day Headers */}
           <div className="grid grid-cols-[80px_repeat(6,1fr)] sticky top-0 z-10 bg-white border-b border-slate-200">
             <div className="p-3 border-r border-slate-100" /> {/* spacer for time column */}
@@ -221,6 +229,7 @@ export default function Agenda() {
           ))}
         </div>
       </div>
+    </div>
 
       {/* New Appointment Modal */}
       <AnimatePresence>
@@ -235,7 +244,7 @@ export default function Agenda() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+              className="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden mt-auto md:mt-0"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="bg-slate-900 p-5 flex justify-between items-center text-white">
@@ -273,7 +282,7 @@ export default function Agenda() {
                 </div>
 
                 {/* Doctor & Sucursal */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Doctor</label>
                     <select 
@@ -297,7 +306,7 @@ export default function Agenda() {
                 </div>
 
                 {/* Day, Time & Duration */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fecha</label>
                     <input 
