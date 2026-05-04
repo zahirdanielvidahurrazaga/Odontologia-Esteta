@@ -8,7 +8,14 @@ import {
 import { useCitas, createCita } from '../../lib/useSupabase';
 
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 to 20:00
-const DAYS_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const DAYS_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+const toLocalDateString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const SUCURSALES = [
   { id: 'alto_flujo', label: 'Alto Flujo', color: '#0EA5E9' },
@@ -21,13 +28,16 @@ const DOCTORES = [
 ];
 
 const getWeekDates = (offset: number) => {
-  const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - today.getDay() + 1 + (offset * 7));
-  return Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0); // Normalize to midnight local time
+  const day = d.getDay();
+  const sunday = new Date(d);
+  sunday.setDate(d.getDate() - day + (offset * 7));
+  
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(sunday);
+    date.setDate(sunday.getDate() + i);
+    return date;
   });
 };
 
@@ -38,7 +48,7 @@ export default function Agenda() {
   // Persistent selected date (initialized to today)
   const [selectedDate, setSelectedDate] = useState(() => {
     const saved = localStorage.getItem('agenda_selected_date');
-    return saved || new Date().toISOString().split('T')[0];
+    return saved || toLocalDateString(new Date());
   });
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>(() => {
     return (localStorage.getItem('agenda_view_mode') as any) || 'day';
@@ -53,8 +63,8 @@ export default function Agenda() {
   }, [selectedDate, viewMode]);
   
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
-  const startDate = weekDates[0].toISOString().split('T')[0];
-  const endDate = weekDates[5].toISOString().split('T')[0];
+  const startDate = toLocalDateString(weekDates[0]);
+  const endDate = toLocalDateString(weekDates[6]);
   
   const { citas, loading, refetch } = useCitas(startDate, endDate);
 
@@ -69,7 +79,7 @@ export default function Agenda() {
     doctor_nombre: DOCTORES[0].label,
     sucursal_id: 'alto_flujo',
     tratamiento: prefilledTratamiento,
-    fecha: weekDates[0].toISOString().split('T')[0],
+    fecha: toLocalDateString(weekDates[0]),
     hora: '09:00',
     duracion_min: 60,
   });
@@ -83,7 +93,7 @@ export default function Agenda() {
 
 
   const openNewAppointment = (dayIndex?: number, hour?: number) => {
-    const dateStr = dayIndex !== undefined ? weekDates[dayIndex].toISOString().split('T')[0] : weekDates[0].toISOString().split('T')[0];
+    const dateStr = dayIndex !== undefined ? weekDates[dayIndex].toISOString().split('T')[0] : toLocalDateString(weekDates[0]);
     const hourStr = hour !== undefined ? `${hour.toString().padStart(2, '0')}:00` : '09:00';
     
     setNewAppt({
@@ -164,9 +174,9 @@ export default function Agenda() {
           </div>
           <div className="grid grid-cols-7 max-w-4xl mx-auto">
             {weekDates.map((date, idx) => {
-              const dateStr = date.toISOString().split('T')[0];
+              const dateStr = toLocalDateString(date);
               const isSelected = selectedDate === dateStr;
-              const isToday = dateStr === new Date().toISOString().split('T')[0];
+              const isToday = dateStr === toLocalDateString(new Date());
               
               return (
                 <div key={idx} className="flex justify-center">
@@ -217,7 +227,7 @@ export default function Agenda() {
               // Current month
               for (let i = 1; i <= daysInMonth; i++) {
                 const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2,'0')}-${i.toString().padStart(2,'0')}`;
-                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                const isToday = dateStr === toLocalDateString(new Date());
                 const isSelected = selectedDate === dateStr;
                 const hasEvents = citas.some(c => c.fecha === dateStr);
 
@@ -243,7 +253,7 @@ export default function Agenda() {
         {viewMode === 'day' && (
           <div className="flex flex-col relative">
             {/* Current Time Line */}
-            {selectedDate === new Date().toISOString().split('T')[0] && (
+            {selectedDate === toLocalDateString(new Date()) && (
               <div 
                 className="absolute left-0 right-0 border-t-2 border-[#0EA5E9] z-10 flex items-center"
                 style={{ 
@@ -309,10 +319,10 @@ export default function Agenda() {
           <div className="w-full h-full">
             <div className="min-w-[800px]">
               {/* Day Headers */}
-              <div className="grid grid-cols-[80px_repeat(6,1fr)] sticky top-0 z-10 bg-white border-b border-slate-200">
+              <div className="grid grid-cols-[80px_repeat(7,1fr)] sticky top-0 z-10 bg-white border-b border-slate-200">
                 <div className="p-3 border-r border-slate-100" />
                 {weekDates.map((date, idx) => {
-                  const isToday = date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                  const isToday = toLocalDateString(date) === toLocalDateString(new Date());
                   return (
                     <div key={idx} className={`p-3 text-center border-r border-slate-100 last:border-0 ${isToday ? 'bg-red-50/30' : ''}`}>
                       <div className={`text-[10px] font-bold uppercase tracking-widest ${isToday ? 'text-[#0EA5E9]' : 'text-slate-400'}`}>
@@ -328,18 +338,18 @@ export default function Agenda() {
 
               {/* Time Rows */}
               {HOURS.map(hour => (
-                <div key={hour} className="grid grid-cols-[80px_repeat(6,1fr)] border-b border-slate-100 min-h-[60px]">
+                <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-slate-100 min-h-[60px]">
                   <div className="p-2 text-right pr-4 border-r border-slate-100">
                     <span className="text-[11px] font-semibold text-slate-400">
                       {hour.toString().padStart(2, '0')}:00
                     </span>
                   </div>
 
-                  {Array.from({ length: 6 }, (_, dayIdx) => {
-                    const dayDateStr = weekDates[dayIdx].toISOString().split('T')[0];
+                  {Array.from({ length: 7 }, (_, dayIdx) => {
+                    const dayDateStr = toLocalDateString(weekDates[dayIdx]);
                     const hourStr = `${hour.toString().padStart(2, '0')}:00:00`;
                     const cellAppointments = citas.filter(a => a.fecha === dayDateStr && a.hora === hourStr);
-                    const isToday = dayDateStr === new Date().toISOString().split('T')[0];
+                    const isToday = dayDateStr === toLocalDateString(new Date());
 
                     return (
                       <div 
